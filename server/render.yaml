@@ -1,0 +1,14 @@
+# Configuration "Infrastructure as Code" pour Render.
+# Déploie automatiquement le service depuis ce dépôt.
+services:
+  - type: web
+    name: garmini
+    runtime: python
+    plan: free
+    # Pas de rootDir : ce render.yaml et app.py sont à la racine du dépôt.
+    # (Si tu gardes app.py dans un sous-dossier, ajoute : rootDir: server)
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
