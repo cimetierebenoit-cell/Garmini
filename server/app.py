@@ -57,7 +57,7 @@ app = Flask(__name__)
 # Marqueur de version : permet de confirmer dans les logs Render QUELLE version
 # tourne réellement. Si ce numéro n'apparaît pas au démarrage, le déploiement
 # n'est pas à jour.
-APP_VERSION = "pushcut-shortchunks-2"
+APP_VERSION = "pushcut-notitle-3"
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -351,11 +351,9 @@ def send_to_pushcut(text, km_number):
         chunks = _split_text(text, PUSHCUT_CHUNK_CHARS)
         total = len(chunks)
         for i, chunk in enumerate(chunks, start=1):
-            title = (
-                f"Garmini — km {km_number}"
-                if total == 1
-                else f"Garmini — km {km_number} ({i}/{total})"
-            )
+            # Titre VIDE : Siri lit alors uniquement le contenu (le corps),
+            # pas de "Garmini km X" énoncé avant le texte.
+            title = ""
             resp = _send_one_notification(title, chunk)
             if not (200 <= resp.status_code < 300):
                 return (False, f"notif {i}/{total} HTTP {resp.status_code} {resp.text[:150]}")
