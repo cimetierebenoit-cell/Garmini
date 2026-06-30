@@ -57,7 +57,7 @@ app = Flask(__name__)
 # Marqueur de version : permet de confirmer dans les logs Render QUELLE version
 # tourne réellement. Si ce numéro n'apparaît pas au démarrage, le déploiement
 # n'est pas à jour.
-APP_VERSION = "pushcut-pacing-1"
+APP_VERSION = "pushcut-shortchunks-2"
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -85,8 +85,17 @@ PUSHCUT_SECRET = os.environ.get("PUSHCUT_SECRET", "zK_G6KUQHQcPfHN-g8Dyi")
 PUSHCUT_MODE = os.environ.get("PUSHCUT_MODE", "server").lower()
 PUSHCUT_SHORTCUT = os.environ.get("PUSHCUT_SHORTCUT", "LireGemini")
 PUSHCUT_NOTIFICATION = os.environ.get("PUSHCUT_NOTIFICATION", "Gemini")
-# Taille max d'un morceau pour le mode notifications (sous la coupe iOS ~256).
-PUSHCUT_CHUNK_CHARS = int(os.environ.get("PUSHCUT_CHUNK_CHARS", "230"))
+# Taille max d'un morceau pour le mode notifications.
+# IMPORTANT iOS 18 : au-delà d'un certain nombre de caractères, Siri considère
+# la notification "longue" et demande "La lire ?" au lieu de la lire seule.
+# On vise donc des morceaux COURTS (~130) pour rester sous ce seuil et obtenir
+# une lecture 100% automatique, écran verrouillé. Baisse encore (110, 100) si
+# Siri demande toujours validation.
+PUSHCUT_CHUNK_CHARS = int(os.environ.get("PUSHCUT_CHUNK_CHARS", "130"))
+# Identifiant de notification : si défini, chaque morceau REMPLACE le précédent
+# (au lieu de s'empiler), ce qui évite le "vous avez N notifications, les lire ?".
+# Laisser vide pour désactiver le remplacement.
+PUSHCUT_NOTIF_ID = os.environ.get("PUSHCUT_NOTIF_ID", "garmini-feedback")
 # Vitesse de lecture estimée de Siri (caractères/seconde) et marge de sécurité.
 # Le délai entre deux notifications = durée de lecture du morceau + marge, afin
 # que Siri AIT FINI de lire avant que la suivante arrive (sinon iOS regroupe et
@@ -96,9 +105,10 @@ PUSHCUT_NOTIFY_BUFFER = float(os.environ.get("PUSHCUT_NOTIFY_BUFFER", "9"))
 
 log.info(
     "DEMARRAGE %s | PUSHCUT_MODE=%s | shortcut=%s | notif=%s | "
-    "chunk=%s | cps=%s | buffer=%s",
+    "chunk=%s | id=%s | cps=%s | buffer=%s",
     APP_VERSION, PUSHCUT_MODE, PUSHCUT_SHORTCUT, PUSHCUT_NOTIFICATION,
-    PUSHCUT_CHUNK_CHARS, PUSHCUT_TTS_CPS, PUSHCUT_NOTIFY_BUFFER,
+    PUSHCUT_CHUNK_CHARS, PUSHCUT_NOTIF_ID or "(aucun)",
+    PUSHCUT_TTS_CPS, PUSHCUT_NOTIFY_BUFFER,
 )
 
 MAX_POINTS = 20000
@@ -290,10 +300,14 @@ def _split_text(text, max_chars):
 
 def _send_one_notification(title, body):
     url = f"https://api.pushcut.io/{PUSHCUT_SECRET}/notifications/{quote(PUSHCUT_NOTIFICATION)}"
+    payload = {"title": title, "text": body, "isTimeSensitive": True}
+    if PUSHCUT_NOTIF_ID:
+        # Même id -> la notif remplace la précédente, pas d'empilement.
+        payload["id"] = PUSHCUT_NOTIF_ID
     resp = requests.post(
         url,
         headers={"Content-Type": "application/json"},
-        json={"title": title, "text": body, "isTimeSensitive": True},
+        json=payload,
         timeout=15,
     )
     return resp
