@@ -91,7 +91,7 @@ PUSHCUT_NOTIFICATION = os.environ.get("PUSHCUT_NOTIFICATION", "Gemini")
 # On vise donc des morceaux COURTS (~130) pour rester sous ce seuil et obtenir
 # une lecture 100% automatique, écran verrouillé. Baisse encore (110, 100) si
 # Siri demande toujours validation.
-PUSHCUT_CHUNK_CHARS = int(os.environ.get("PUSHCUT_CHUNK_CHARS", "100"))
+PUSHCUT_CHUNK_CHARS = int(os.environ.get("PUSHCUT_CHUNK_CHARS", "90"))
 # Identifiant de notification : si défini, chaque morceau REMPLACE le précédent
 # (au lieu de s'empiler), ce qui évite le "vous avez N notifications, les lire ?".
 # Laisser vide pour désactiver le remplacement.
