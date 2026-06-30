@@ -100,8 +100,8 @@ PUSHCUT_NOTIF_ID = os.environ.get("PUSHCUT_NOTIF_ID", "garmini-feedback")
 # Le délai entre deux notifications = durée de lecture du morceau + marge, afin
 # que Siri AIT FINI de lire avant que la suivante arrive (sinon iOS regroupe et
 # n'énonce que la dernière).
-PUSHCUT_TTS_CPS = float(os.environ.get("PUSHCUT_TTS_CPS", "7"))
-PUSHCUT_NOTIFY_BUFFER = float(os.environ.get("PUSHCUT_NOTIFY_BUFFER", "9"))
+PUSHCUT_TTS_CPS = float(os.environ.get("PUSHCUT_TTS_CPS", "11"))
+PUSHCUT_NOTIFY_BUFFER = float(os.environ.get("PUSHCUT_NOTIFY_BUFFER", "3"))
 
 log.info(
     "DEMARRAGE %s | PUSHCUT_MODE=%s | shortcut=%s | notif=%s | "
